@@ -10,6 +10,7 @@ export default function Home() {
   const [palette, setPalette] = useState([]);
   const [colorNames, setColorNames] = useState([]);
   const [newPalette, setNewPalette] = useState([]);
+  const [newColorNames, setNewColorNames] = useState([]);
 
   const handleAdjustMood = async () => {
     if (palette.length === 0 || !mood) return;
@@ -36,6 +37,8 @@ export default function Home() {
 
       const data = await res.json();
       setNewPalette(data.adjusted_colors);
+      setNewColorNames(data.names);
+
     } catch (err) {
       console.error("Mood adjust failed:", err);
     }
@@ -98,7 +101,8 @@ export default function Home() {
                   title={color}
                 ></div>
                 <div className="text-sm text-center mt-1">
-                  {colorNames[index]}
+                  {newColorNames[index]}
+                  
                 </div>
               </div>
             ))}

@@ -34,7 +34,8 @@ async def adjust_mood_endpoint(
     mood: str = Form(...), base_colors: list[str] = Form(...)
 ):
     palette = adjust_palette_by_mood(base_colors, mood)
-    return {"adjusted_colors": palette}
+    names = [find_closest_color_name(color, xkcd_colors) for color in palette]
+    return {"adjusted_colors": palette, "names": names}
 
 
 @app.post("/export-png")
