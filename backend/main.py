@@ -3,8 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from utils.color_extractor import extract_colors
 from utils.mood_adjuster import adjust_palette_by_mood
 from utils.png_exporter import generate_png_swatch
+from utils.find_closest_color_name import find_closest_color_name
 from fastapi.responses import JSONResponse, StreamingResponse
 from io import BytesIO
+from mycolors.xkcd_colors import xkcd_colors
+
 
 app = FastAPI()
 
@@ -22,7 +25,8 @@ app.add_middleware(
 async def extract_colors_endpoint(file: UploadFile = File(...)):
     image_bytes = await file.read()
     colors = extract_colors(image_bytes)
-    return {"colors": colors}
+    names = [find_closest_color_name(color, xkcd_colors) for color in colors]
+    return {"colors": colors, "names": names}
 
 
 @app.post("/adjust-mood")

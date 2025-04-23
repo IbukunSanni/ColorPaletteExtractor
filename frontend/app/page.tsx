@@ -8,6 +8,7 @@ export default function Home() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [mood, setMood] = useState("");
   const [palette, setPalette] = useState([]);
+  const [colorNames, setColorNames] = useState([]);
   const [newPalette, setNewPalette] = useState([]);
 
   const handleAdjustMood = async () => {
@@ -41,28 +42,34 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log("palette changed:", palette);
-  }, [palette]);
+    // console.log("palette changed:", palette);
+    // console.log("names changed:", colorNames);
+  }, [palette, colorNames]);
 
   return (
     <Layout>
       <ImageUploader
         // onImageUpload={(file) => setImageFile(file)}
         onColorExtracted={(colors) => setPalette(colors)}
+        onColorNamesExtracted={(names) => setColorNames(names)}
       />
       {palette.length > 0 && (
         <div className="mt-4">
           <p className="text-sm text-gray-600">
             <strong>Extracted Colors:</strong>
           </p>
-          <div className="flex space-x-2 mt-2">
+          <div className="flex space-x-4 mt-2 flex-wrap">
             {palette.map((color, index) => (
-              <div
-                key={index}
-                className="w-8 h-8 rounded"
-                style={{ backgroundColor: color }}
-                title={color}
-              ></div>
+              <div key={index} className="flex flex-col items-center">
+                <div
+                  className="w-8 h-8 rounded mb-1"
+                  style={{ backgroundColor: color }}
+                  title={color}
+                ></div>
+                <span className="text-xs text-center text-gray-700">
+                  {colorNames?.[index] || "Unnamed"}
+                </span>
+              </div>
             ))}
           </div>
         </div>
@@ -80,16 +87,20 @@ export default function Home() {
       {newPalette.length > 0 && (
         <div className="mt-4">
           <p className="text-sm text-gray-600">
-            <strong>Extracted Colors:</strong>
+            <strong>Adjusted Colors:</strong>
           </p>
           <div className="flex space-x-2 mt-2">
             {newPalette.map((color, index) => (
-              <div
-                key={index}
-                className="w-8 h-8 rounded"
-                style={{ backgroundColor: color }}
-                title={color}
-              ></div>
+              <div key={index} className="flex flex-col items-center">
+                <div
+                  className="w-8 h-8 rounded"
+                  style={{ backgroundColor: color }}
+                  title={color}
+                ></div>
+                <div className="text-sm text-center mt-1">
+                  {colorNames[index]}
+                </div>
+              </div>
             ))}
           </div>
         </div>

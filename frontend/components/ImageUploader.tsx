@@ -1,7 +1,15 @@
 "use client";
 import { useState } from "react";
 
-export default function ImageUploader({ onColorExtracted }: { onColorExtracted: (colors: any[]) => void }) {
+type ImageUploaderProps = {
+  onColorExtracted: (colors: any[]) => void;
+  onColorNamesExtracted: (names: string[]) => void;
+}
+
+export default function ImageUploader({
+  onColorExtracted,
+  onColorNamesExtracted,
+}: ImageUploaderProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +30,9 @@ export default function ImageUploader({ onColorExtracted }: { onColorExtracted: 
       });
 
       const data = await res.json();
+      onColorNamesExtracted(data.names);
       onColorExtracted(data.colors);
+      
     } catch (err) {
       console.error("Error uploading image:", err);
     } finally {
