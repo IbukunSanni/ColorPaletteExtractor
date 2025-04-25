@@ -16,7 +16,7 @@ export default function MoodInput({ onMoodChange }: { onMoodChange: (mood: strin
           onMoodChange(e.target.value);
         }}
         className="w-full border border-gray-300 rounded-md p-2"
-        placeholder="e.g. calm, energetic, romantic..."
+        placeholder="e.g. dark, pastel, ..."
       />
     </div>
   );
