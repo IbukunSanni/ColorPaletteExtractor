@@ -1,10 +1,12 @@
 "use client";
+
+import Image from "next/image";
 import { useState } from "react";
 
 type ImageUploaderProps = {
-  onColorExtracted: (colors: any[]) => void;
+  onColorExtracted: (colors: string[]) => void;
   onColorNamesExtracted: (names: string[]) => void;
-}
+};
 
 export default function ImageUploader({
   onColorExtracted,
@@ -32,7 +34,6 @@ export default function ImageUploader({
       const data = await res.json();
       onColorNamesExtracted(data.names);
       onColorExtracted(data.colors);
-      
     } catch (err) {
       console.error("Error uploading image:", err);
     } finally {
@@ -42,15 +43,38 @@ export default function ImageUploader({
 
   return (
     <div className="mb-6">
-      <label className="block text-sm font-medium text-gray-700 mb-2">Upload Image</label>
-      <input id="file-input" type="file" accept="image/*" onChange={handleChange} className="hidden" />
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Upload Image
+      </label>
+      <input
+        id="file-input"
+        type="file"
+        accept="image/*"
+        onChange={handleChange}
+        className="hidden"
+      />
 
-      <label htmlFor="file-input" className="inline-block cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition">
+      <label
+        htmlFor="file-input"
+        className="inline-block cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition"
+      >
         Choose Image
       </label>
 
-      {loading && <p className="mt-2 text-sm text-gray-500">Extracting colors...</p>}
-      {preview && <img src={preview} alt="Preview" className="mt-4 w-full max-w-xs rounded-lg shadow" />}
+      {loading && (
+        <p className="mt-2 text-sm text-gray-500">Extracting colors...</p>
+      )}
+      {preview && (
+        <div className="mt-4 w-full max-w-xs">
+          <Image
+            src={preview}
+            alt="Preview"
+            width={300} // You must specify width and height
+            height={300}
+            className="rounded-lg shadow w-full h-auto"
+          />
+        </div>
+      )}
     </div>
   );
 }
