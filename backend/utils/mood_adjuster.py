@@ -29,6 +29,7 @@ def get_adjustment_weights(mood: str):
 
 
 def adjust_palette_by_mood(base_colors, mood):
+
     # Dummy variation based on mood
     if mood.lower() == "dark":
         return [shade_color(c, factor=0.6) for c in base_colors]
