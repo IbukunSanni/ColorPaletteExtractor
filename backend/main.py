@@ -4,6 +4,7 @@ from utils.color_extractor import extract_colors
 from utils.mood_adjuster import adjust_palette_by_mood
 from utils.png_exporter import generate_png_swatch
 from utils.find_closest_color_name import find_closest_color_name
+
 from fastapi.responses import JSONResponse, StreamingResponse
 from io import BytesIO
 from mycolors.xkcd_colors import xkcd_colors
@@ -19,6 +20,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/")
+def read_root():
+    return {"message": "✅ FastAPI backend is running!"}
+
+
+@app.post("/")
+def post_root():
+    return {"message": "✅ POST received! FastAPI is working."}
 
 
 @app.post("/extract-colors")
