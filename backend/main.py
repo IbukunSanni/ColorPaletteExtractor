@@ -17,7 +17,8 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000"
+        "http://localhost:3000",
+        "https://color-palette-extractor.vercel.app/",
     ],  # Replace with your frontend URL in production
     allow_credentials=True,
     allow_methods=["*"],
