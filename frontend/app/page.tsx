@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import ImageUploader from "@/components/ImageUploader";
 import MoodInput from "@/components/MoodInput";
+import { API_BASE_URL } from "@/lib/constants";
 
 export default function Home() {
   // const [imageFile, setImageFile] = useState<File | null>(null);
@@ -23,7 +24,7 @@ export default function Home() {
     });
 
     try {
-      const res = await fetch("http://localhost:8000/adjust-mood", {
+      const res = await fetch(`${API_BASE_URL}/adjust-mood`, {
         method: "POST",
         body: formData,
       });
