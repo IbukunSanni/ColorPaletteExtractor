@@ -8,6 +8,7 @@ from utils.find_closest_color_name import find_closest_color_name
 from fastapi.responses import JSONResponse, StreamingResponse
 from io import BytesIO
 from mycolors.xkcd_colors import xkcd_colors
+from PIL import Image
 
 
 app = FastAPI()
@@ -35,7 +36,11 @@ def post_root():
 @app.post("/extract-colors")
 async def extract_colors_endpoint(file: UploadFile = File(...)):
     image_bytes = await file.read()
+
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    image = image.resize((100, 100))  # downscale to reduce memory
     colors = extract_colors(image_bytes)
+
     names = [find_closest_color_name(color, xkcd_colors) for color in colors]
     return {"colors": colors, "names": names}
 
