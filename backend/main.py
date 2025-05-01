@@ -39,7 +39,7 @@ def post_root():
 async def extract_colors_endpoint(file: UploadFile = File(...)):
     image_bytes = await file.read()
 
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    image = Image.open(BytesIO(image_bytes)).convert("RGB")
     image = image.resize((100, 100))  # downscale to reduce memory
     colors = extract_colors(image_bytes)
 
