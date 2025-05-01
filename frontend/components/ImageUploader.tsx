@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { API_BASE_URL } from "@/lib/constants";
 
 type ImageUploaderProps = {
   onColorExtracted: (colors: string[]) => void;
@@ -26,7 +27,7 @@ export default function ImageUploader({
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:8000/extract-colors", {
+      const res = await fetch(  `${API_BASE_URL}/extract-colors`, {
         method: "POST",
         body: formData,
       });
