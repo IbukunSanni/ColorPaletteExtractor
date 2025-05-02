@@ -39,21 +39,25 @@ def post_root():
 @app.post("/extract-colors")
 async def extract_colors_endpoint(file: UploadFile = File(...)):
     try:
-        print(f"Received file: {file.filename}, Content-Type: {file.content_type}")
         image_bytes = await file.read()
-        print(f"Read {len(image_bytes)} bytes from image")
-
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        image = image.resize((100, 100))
-
+        image = image.resize((100, 100))  # optional
     except UnidentifiedImageError:
-        raise HTTPException(status_code=400, detail="Invalid image format.")
+        raise HTTPException(status_code=400, detail="Invalid or corrupted image file.")
     except Exception as e:
-        print(f"Unhandled exception: {e}")
-        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Image processing failed: {str(e)}"
+        )
 
-    colors = extract_colors(image)
-    names = [find_closest_color_name(c, xkcd_colors) for c in colors]
+    # Step 3: Save resized image into an in-memory file-like object
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)  # Go back to the start of the buffer
+
+    # Step 4: Extract colors
+    colors = extract_colors(buffer)
+
+    names = [find_closest_color_name(color, xkcd_colors) for color in colors]
     return {"colors": colors, "names": names}
 
 
