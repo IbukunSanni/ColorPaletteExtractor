@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from utils.color_extractor import extract_colors
 from utils.mood_adjuster import adjust_palette_by_mood
@@ -6,9 +6,9 @@ from utils.png_exporter import generate_png_swatch
 from utils.find_closest_color_name import find_closest_color_name
 
 from fastapi.responses import JSONResponse, StreamingResponse
-from io import BytesIO
+import io
 from mycolors.xkcd_colors import xkcd_colors
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 
 app = FastAPI()
@@ -18,7 +18,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://color-palette-extractor.vercel.app/",
+        "https://color-palette-extractor.vercel.app",
     ],  # Replace with your frontend URL in production
     allow_credentials=True,
     allow_methods=["*"],
@@ -38,13 +38,22 @@ def post_root():
 
 @app.post("/extract-colors")
 async def extract_colors_endpoint(file: UploadFile = File(...)):
-    image_bytes = await file.read()
+    try:
+        print(f"Received file: {file.filename}, Content-Type: {file.content_type}")
+        image_bytes = await file.read()
+        print(f"Read {len(image_bytes)} bytes from image")
 
-    image = Image.open(BytesIO(image_bytes)).convert("RGB")
-    image = image.resize((100, 100))  # downscale to reduce memory
-    colors = extract_colors(image_bytes)
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        image = image.resize((100, 100))
 
-    names = [find_closest_color_name(color, xkcd_colors) for color in colors]
+    except UnidentifiedImageError:
+        raise HTTPException(status_code=400, detail="Invalid image format.")
+    except Exception as e:
+        print(f"Unhandled exception: {e}")
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+    colors = extract_colors(image)
+    names = [find_closest_color_name(c, xkcd_colors) for c in colors]
     return {"colors": colors, "names": names}
 
 
