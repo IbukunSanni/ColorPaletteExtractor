@@ -34,10 +34,10 @@ cd ../frontend
 npm install
 npm run dev
 ```
-##  Example image 
+## 🖼️  Example image 
 ![Horizon-Zero-Dawn](https://github.com/user-attachments/assets/416c746d-91d9-44dc-abce-a264ce103afd)
 
-## App utilization 
+## 📱 App utilization 
 ![image](https://github.com/user-attachments/assets/eab8e5e1-f7fe-42f7-8e70-ca7b0c881c82)
 
 ## 🧠 Why I Built This
