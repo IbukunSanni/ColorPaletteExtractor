@@ -38,15 +38,13 @@ npm run dev
 ![Horizon-Zero-Dawn](https://github.com/user-attachments/assets/416c746d-91d9-44dc-abce-a264ce103afd)
 
 ## App utilization 
-![image](https://github.com/user-attachments/assets/4e20f8b3-2425-4577-a120-10a2a281edf1)
-
-## 📥 Download Formats
-
+![image](https://github.com/user-attachments/assets/eab8e5e1-f7fe-42f7-8e70-ca7b0c881c82)
 
 ## 🧠 Why I Built This
 I wanted to create a tool that uses AI to assist artists. This tool allows users to upload an image and use generative AI to alter the palettes to a particular mood
 
 ## 📌 TODO
+- PNG download coming
 ## 📄 License
 - MIT
 
