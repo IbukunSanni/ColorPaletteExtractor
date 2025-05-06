@@ -113,4 +113,6 @@ def adjust_palette_by_mood(base_colors, mood):
 
         return rgb_to_hex(r, g, b)
 
+    print("adjusted palette's done")
+    print(f"weights: {weights}")
     return [adjust_color(c) for c in base_colors]
