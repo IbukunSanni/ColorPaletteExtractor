@@ -69,8 +69,15 @@ async def extract_colors_endpoint(file: UploadFile = File(...)):
 async def adjust_mood_endpoint(
     mood: str = Form(...), base_colors: list[str] = Form(...)
 ):
-    palette = adjust_palette_by_mood(base_colors, mood)
-    names = [find_closest_color_name(color, xkcd_colors) for color in palette]
+
+    try:
+        # your logic here
+        palette = adjust_palette_by_mood(base_colors, mood)
+        names = [find_closest_color_name(color, xkcd_colors) for color in palette]
+    except Exception as e:
+        print(f"Error in adjust-mood: {e}")
+        raise HTTPException(status_code=500, detail="Mood adjustment failed.")
+
     return {"adjusted_colors": palette, "names": names}
 
 
