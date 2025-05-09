@@ -43,7 +43,6 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 # Path to the JSON file in the same folder
 file_path = os.path.join(script_dir, "color_names.json")
 
-print(f"file_path: {file_path}")
 # Load the JSON content
 with open(file_path, "r") as f:
     colors = json.load(f)
