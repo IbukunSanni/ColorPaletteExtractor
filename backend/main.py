@@ -4,7 +4,7 @@ from utils.color_extractor import extract_colors
 from utils.mood_adjuster import adjust_palette_by_mood
 from utils.png_exporter import generate_png_swatch
 from utils.find_closest_color_name import find_closest_color_name
-
+import time
 from fastapi.responses import JSONResponse, StreamingResponse
 import io
 from mycolors.xkcd_colors import xkcd_colors
