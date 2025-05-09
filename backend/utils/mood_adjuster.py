@@ -5,7 +5,7 @@ import colorsys
 
 # 🔧 Load model once at startup (not per request)
 print("🧠 Loading transformer model...")
-model = SentenceTransformer("all-MiniLM-L6-v2")
+model = SentenceTransformer("paraphrase-albert-small-v2")
 print("✅ Model loaded.")
 
 
