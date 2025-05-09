@@ -1,10 +1,15 @@
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-from functools import lru_cache
 import colorsys
 
+# 🔧 Load model once at startup (not per request)
+print("🧠 Loading transformer model...")
+model = SentenceTransformer("all-MiniLM-L6-v2")
+print("✅ Model loaded.")
 
+
+# 🎨 COLOR HELPERS
 def hex_to_rgb(hex_color):
     r = int(hex_color[1:3], 16) / 255.0
     g = int(hex_color[3:5], 16) / 255.0
@@ -28,20 +33,13 @@ def adjust_saturation(r, g, b, factor):
     return colorsys.hls_to_rgb(h, l, s)
 
 
-@lru_cache()
-def get_model():
-    return SentenceTransformer("all-MiniLM-L6-v2")
-
-
+# 🧠 MOOD ENCODING
 def mood_vector(mood: str):
-    model = get_model()
     return model.encode(mood)
 
 
 def get_adjustment_weights(mood: str):
     vec = mood_vector(mood)
-    model = get_model()
-    weights = {}
     reference_moods = {
         "bright": model.encode("bright"),
         "dark": model.encode("dark"),
@@ -51,32 +49,15 @@ def get_adjustment_weights(mood: str):
         "desaturated": model.encode("muted"),
     }
 
+    weights = {}
     for key, ref_vec in reference_moods.items():
         sim = np.dot(vec, ref_vec) / (np.linalg.norm(vec) * np.linalg.norm(ref_vec))
         weights[key] = sim
+
     return weights
 
 
-def shade_color(hex_color, factor=0.7):
-    r = int(hex_color[1:3], 16)
-    g = int(hex_color[3:5], 16)
-    b = int(hex_color[5:7], 16)
-    r = int(r * factor)
-    g = int(g * factor)
-    b = int(b * factor)
-    return f"#{r:02x}{g:02x}{b:02x}"
-
-
-def tint_color(hex_color, factor=0.4):
-    r = int(hex_color[1:3], 16)
-    g = int(hex_color[3:5], 16)
-    b = int(hex_color[5:7], 16)
-    r = int(r + (255 - r) * factor)
-    g = int(g + (255 - g) * factor)
-    b = int(b + (255 - b) * factor)
-    return f"#{r:02x}{g:02x}{b:02x}"
-
-
+# 🎯 MAIN ADJUSTMENT FUNCTION
 def adjust_palette_by_mood(base_colors, mood):
     weights = get_adjustment_weights(mood)
 
@@ -97,14 +78,15 @@ def adjust_palette_by_mood(base_colors, mood):
             g += (1 - g) * factor
             b += (1 - b) * factor
 
-        # Hue shift (warm vs cool)
-        if weights["warm"] > weights["cool"]:
-            shift = 0.03 * weights["warm"]  # red/yellow shift
-        else:
-            shift = -0.03 * weights["cool"]  # blue shift
+        # Warm/cool hue shift
+        shift = (
+            0.03 * weights["warm"]
+            if weights["warm"] > weights["cool"]
+            else -0.03 * weights["cool"]
+        )
         r, g, b = adjust_hue(r, g, b, shift)
 
-        # Saturation adjust
+        # Saturation tweak
         if weights["saturated"] > weights["desaturated"]:
             sat_factor = 1 + (weights["saturated"] - weights["desaturated"]) * 0.5
         else:
@@ -113,6 +95,5 @@ def adjust_palette_by_mood(base_colors, mood):
 
         return rgb_to_hex(r, g, b)
 
-    print("adjusted palette's done")
-    print(f"weights: {weights}")
+    print(f"🎨 Mood Weights: {weights}")
     return [adjust_color(c) for c in base_colors]

@@ -65,20 +65,22 @@ async def extract_colors_endpoint(file: UploadFile = File(...)):
     return {"colors": colors, "names": names}
 
 
+# 🧠 Adjust palette by mood
 @app.post("/adjust-mood")
 async def adjust_mood_endpoint(
     mood: str = Form(...), base_colors: list[str] = Form(...)
 ):
-
+    start = time.time()
     try:
-        # your logic here
+        print(f"🎯 Adjusting mood: '{mood}' for {len(base_colors)} colors")
         palette = adjust_palette_by_mood(base_colors, mood)
         names = [find_closest_color_name(color, xkcd_colors) for color in palette]
-    except Exception as e:
-        print(f"Error in adjust-mood: {e}")
-        raise HTTPException(status_code=500, detail="Mood adjustment failed.")
+        print(f"✅ Done in {time.time() - start:.2f}s")
+        return {"adjusted_colors": palette, "names": names}
 
-    return {"adjusted_colors": palette, "names": names}
+    except Exception as e:
+        print(f"❌ Error in /adjust-mood: {e}")
+        raise HTTPException(status_code=500, detail="Mood adjustment failed.")
 
 
 @app.post("/export-png")
