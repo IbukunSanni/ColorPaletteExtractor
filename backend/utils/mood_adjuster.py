@@ -5,7 +5,7 @@ import colorsys
 
 # 🔧 Load model once at startup (not per request)
 print("🧠 Loading transformer model...")
-model = SentenceTransformer("paraphrase-albert-small-v2")
+# model = SentenceTransformer("paraphrase-albert-small-v2")
 print("✅ Model loaded.")
 
 
@@ -38,22 +38,18 @@ def mood_vector(mood: str):
     return model.encode(mood)
 
 
-def get_adjustment_weights(mood: str):
-    vec = mood_vector(mood)
-    reference_moods = {
-        "bright": model.encode("bright"),
-        "dark": model.encode("dark"),
-        "warm": model.encode("warm"),
-        "cool": model.encode("cool"),
-        "saturated": model.encode("vibrant"),
-        "desaturated": model.encode("muted"),
-    }
+REFERENCE_ENCODINGS = {
+    label: model.encode(label)
+    for label in ["bright", "dark", "warm", "cool", "vibrant", "muted"]
+}
 
+
+def get_adjustment_weights(mood: str):
+    vec = model.encode(mood)
     weights = {}
-    for key, ref_vec in reference_moods.items():
+    for key, ref_vec in REFERENCE_ENCODINGS.items():
         sim = np.dot(vec, ref_vec) / (np.linalg.norm(vec) * np.linalg.norm(ref_vec))
         weights[key] = sim
-
     return weights
 
 
