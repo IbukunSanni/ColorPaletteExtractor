@@ -1,12 +1,20 @@
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from starlette.concurrency import run_in_threadpool
 import numpy as np
 import colorsys
+import gc
 
-# 🔧 Load model once at startup (not per request)
+# ✅ Load small model once globally
 print("🧠 Loading transformer model...")
 model = SentenceTransformer("paraphrase-albert-small-v2")
 print("✅ Model loaded.")
+
+# ✅ Cache reference mood encodings once
+REFERENCE_ENCODINGS = {
+    label: model.encode(label)
+    for label in ["bright", "dark", "warm", "cool", "vibrant", "muted"]
+}
 
 
 # 🎨 COLOR HELPERS
@@ -33,48 +41,40 @@ def adjust_saturation(r, g, b, factor):
     return colorsys.hls_to_rgb(h, l, s)
 
 
-# 🧠 MOOD ENCODING
-def mood_vector(mood: str):
-    return model.encode(mood)
+# 🧠 Encode mood string → vector (offloaded to threadpool)
+async def mood_vector(mood: str):
+    return await run_in_threadpool(model.encode, mood)
 
 
-REFERENCE_ENCODINGS = {
-    label: model.encode(label)
-    for label in ["bright", "dark", "warm", "cool", "vibrant", "muted"]
-}
-
-
-def get_adjustment_weights(mood: str):
-    vec = model.encode(mood)
+# ✅ Compute similarity weights for a given mood
+async def get_adjustment_weights(mood: str):
+    vec = await mood_vector(mood)
     weights = {}
     for key, ref_vec in REFERENCE_ENCODINGS.items():
         sim = np.dot(vec, ref_vec) / (np.linalg.norm(vec) * np.linalg.norm(ref_vec))
         weights[key] = sim
+    del vec
+    gc.collect()
     return weights
 
 
-# 🎯 MAIN ADJUSTMENT FUNCTION
-def adjust_palette_by_mood(base_colors, mood):
-    weights = get_adjustment_weights(mood)
-
+# 🎯 Adjust palette using precomputed weights (SYNC function)
+def adjust_palette_by_mood(base_colors, weights):
     def adjust_color(hex_color):
         r, g, b = hex_to_rgb(hex_color)
 
-        # Darken
         if weights["dark"] > 0.5:
             factor = 1 - weights["dark"] * 0.4
             r *= factor
             g *= factor
             b *= factor
 
-        # Brighten
         if weights["bright"] > 0.5:
             factor = weights["bright"] * 0.4
             r += (1 - r) * factor
             g += (1 - g) * factor
             b += (1 - b) * factor
 
-        # Warm/cool hue shift
         shift = (
             0.03 * weights["warm"]
             if weights["warm"] > weights["cool"]
@@ -82,7 +82,6 @@ def adjust_palette_by_mood(base_colors, mood):
         )
         r, g, b = adjust_hue(r, g, b, shift)
 
-        # Saturation tweak
         if weights["saturated"] > weights["desaturated"]:
             sat_factor = 1 + (weights["saturated"] - weights["desaturated"]) * 0.5
         else:
