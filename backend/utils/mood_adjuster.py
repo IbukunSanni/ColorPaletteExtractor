@@ -13,7 +13,7 @@ print("✅ Model loaded.")
 # ✅ Cache reference mood encodings once
 REFERENCE_ENCODINGS = {
     label: model.encode(label)
-    for label in ["bright", "dark", "warm", "cool", "vibrant", "muted"]
+    for label in ["bright", "dark", "warm", "cool", "saturated", "desaturated"]
 }
 
 
