@@ -1,14 +1,15 @@
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, StreamingResponse
 from utils.color_extractor import extract_colors
-from utils.mood_adjuster import adjust_palette_by_mood
 from utils.png_exporter import generate_png_swatch
 from utils.find_closest_color_name import find_closest_color_name
+from utils.mood_adjuster import get_adjustment_weights, adjust_palette_by_mood
 import time
-from fastapi.responses import JSONResponse, StreamingResponse
 import io
-from mycolors.xkcd_colors import xkcd_colors
+import psutil, os  # ⬅️ NEW: for memory tracking
 from PIL import Image, UnidentifiedImageError
+from mycolors.xkcd_colors import xkcd_colors
 
 
 app = FastAPI()
@@ -73,11 +74,15 @@ async def adjust_mood_endpoint(
     start = time.time()
     try:
         print(f"🎯 Adjusting mood: '{mood}' for {len(base_colors)} colors")
-        palette = adjust_palette_by_mood(base_colors, mood)
-        names = [find_closest_color_name(color, xkcd_colors) for color in palette]
-        print(f"✅ Done in {time.time() - start:.2f}s")
-        return {"adjusted_colors": palette, "names": names}
 
+        weights = await get_adjustment_weights(mood)
+        palette = adjust_palette_by_mood(base_colors, weights)
+        names = [find_closest_color_name(color, xkcd_colors) for color in palette]
+
+        print(f"✅ Done in {time.time() - start:.2f}s")
+        print_mem("after /adjust-mood")
+
+        return {"adjusted_colors": palette, "names": names}
     except Exception as e:
         print(f"❌ Error in /adjust-mood: {e}")
         raise HTTPException(status_code=500, detail="Mood adjustment failed.")
@@ -90,3 +95,18 @@ async def export_png(colors: list[str] = Form(...)):
     image.save(buffer, format="PNG")
     buffer.seek(0)
     return StreamingResponse(buffer, media_type="image/png")
+
+
+# ✅ NEW: Memory usage monitor
+@app.get("/mem")
+def get_memory_usage():
+    process = psutil.Process(os.getpid())
+    mem = process.memory_info().rss / (1024 * 1024)
+    return {"memory_mb": round(mem, 2)}
+
+
+# ✅ Memory log function for print-based monitoring
+def print_mem(tag=""):
+    process = psutil.Process(os.getpid())
+    mem = process.memory_info().rss / (1024 * 1024)
+    print(f"📦 {tag} - Memory: {mem:.2f} MB")
